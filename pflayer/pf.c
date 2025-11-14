@@ -1,5 +1,6 @@
 /* pf.c: Paged File Interface Routines+ support routines */
 #include <stdio.h>
+#include <stdlib.h>
 #include <sys/types.h>
 #include <fcntl.h>
 #include <sys/file.h>
@@ -24,7 +25,7 @@ sense that it's <0 or >= # of pages in the file */
 #define PFinvalidPagenum(fd,pagenum) ((pagenum)<0 || (pagenum) >= \
 				PFftab[fd].hdr.numpages)
 
-extern char *malloc();
+// extern char *malloc();
 
 
 /* --- NEW: Prototypes for functions in buf.c --- */
@@ -50,7 +51,7 @@ char *s;
 	return(s);
 }
 
-static PFtabFindFname(fname)
+static int PFtabFindFname(fname)
 char *fname;		/* file name to find */
 /****************************************************************************
 SPECIFICATIONS:
@@ -75,7 +76,7 @@ int i;
 	return(-1);
 }
 
-static PFftabFindFree()
+static int PFftabFindFree()
 /****************************************************************************
 SPECIFICATIONS:
 	Find a free entry in the open file table "PFtab", and return its
@@ -97,7 +98,7 @@ int i;
 	return(-1);
 }
 
-PFreadfcn(fd,pagenum,buf)
+int PFreadfcn(fd,pagenum,buf)
 int fd;	/* file descriptor */
 int pagenum; /* page number */
 PFfpage *buf;
@@ -134,7 +135,7 @@ int error;
 	return(PFE_OK);
 }
 
-PFwritefcn(fd,pagenum,buf)
+int PFwritefcn(fd,pagenum,buf)
 int fd;		/* file descriptor */
 int pagenum;	/* page to read */
 PFfpage *buf;	/* buffer where to read the page */
@@ -203,7 +204,7 @@ int i;
 	}
 }
 
-PF_CreateFile(fname)
+int PF_CreateFile(fname)
 char *fname;	/* name of file to create */
 /****************************************************************************
 SPECIFICATIONS:
@@ -250,7 +251,7 @@ int error;
 }
 
 
-PF_DestroyFile(fname)
+int PF_DestroyFile(fname)
 char *fname;		/* file name to destroy */
 /****************************************************************************
 SPECIFICATIONS:
@@ -284,7 +285,7 @@ int error;
 }
 
 
-PF_OpenFile(fname)
+int PF_OpenFile(fname)
 char *fname;		/* name of the file to open */
 /****************************************************************************
 SPECIFICATIONS:
@@ -348,7 +349,7 @@ int fd; /* file descriptor */
 	return(fd);
 }
 
-PF_CloseFile(fd)
+int PF_CloseFile(fd)
 int fd;		/* file descriptor to close */
 /****************************************************************************
 SPECIFICATIONS:
@@ -413,7 +414,7 @@ int error;
 }
 
 
-PF_GetFirstPage(fd,pagenum,pagebuf)
+int PF_GetFirstPage(fd,pagenum,pagebuf)
 int fd;	/* file descriptor */
 int *pagenum;	/* page number of first page */
 char **pagebuf;	/* pointer to the pointer to buffer */
@@ -439,7 +440,7 @@ RETURN VALUE:
 }
 
 
-PF_GetNextPage(fd,pagenum,pagebuf)
+int PF_GetNextPage(fd,pagenum,pagebuf)
 int fd;	/* file descriptor of the file */
 int *pagenum;	/* old page number on input, new page number on output */
 char **pagebuf;	/* pointer to pointer to buffer of page data */
@@ -501,7 +502,7 @@ PFfpage *fpage;	/* pointer to file page */
 
 }
 
-PF_GetThisPage(fd,pagenum,pagebuf)
+int PF_GetThisPage(fd,pagenum,pagebuf)
 int fd;		/* file descriptor */
 int pagenum;	/* page number to read */
 char **pagebuf;	/* pointer to pointer to page data */
@@ -556,7 +557,7 @@ PFfpage *fpage;
 	}
 }
 
-PF_AllocPage(fd,pagenum,pagebuf)
+int PF_AllocPage(fd,pagenum,pagebuf)
 int fd;		/* file descriptor */
 int *pagenum;	/* page number */
 char **pagebuf;	/* pointer to pointer to page buffer*/
@@ -627,7 +628,7 @@ int error;
 	return(PFE_OK);
 }
 
-PF_DisposePage(fd,pagenum)
+int PF_DisposePage(fd,pagenum)
 int fd;		/* file descriptor */
 int pagenum;	/* page number */
 /****************************************************************************
@@ -679,7 +680,7 @@ int error;
 	return(PFbufUnfix(fd,pagenum,TRUE));
 }
 
-PF_UnfixPage(fd,pagenum,dirty)
+int PF_UnfixPage(fd,pagenum,dirty)
 int fd;	/* file descriptor */
 int pagenum;	/* page number */
 int dirty;	/* true if file is dirty */

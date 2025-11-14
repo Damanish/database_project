@@ -4,6 +4,7 @@ PFbufPrint() */
 #include <stdio.h>
 #include "pf.h"
 #include "pftypes.h"
+#include <stdlib.h>
 
 /* --- Configuration Globals --- */
 /* Replaces PF_MAX_BUFS define from pftypes.h */
@@ -20,8 +21,6 @@ static PFbpage *PFfirstbpage= NULL;	/* ptr to first buffer page, or NULL */
 static PFbpage *PFlastbpage = NULL;	/* ptr to last buffer page, or NULL */
 static PFbpage *PFfreebpage= NULL;	/* list of free buffer pages */
 
-extern char *malloc();
-
 /* --- NEW Public Configuration Functions --- */
 
 /**
@@ -36,7 +35,6 @@ void PFbufInit()
 	PFfreebpage = NULL;
 	
 	/* Set defaults, in case user doesn't call setters */
-	g_pf_max_bufs = PF_MAX_BUFS; 
 	g_pf_strategy = PF_STRAT_LRU;
 	
 	/* Reset stats */
@@ -159,7 +157,7 @@ GLOBAL VARIABLES MODIFIED:
 }
 
 
-static PFbufInternalAlloc(bpage,writefcn)
+static int PFbufInternalAlloc(bpage,writefcn)
 PFbpage **bpage;	/* pointer to pointer to buffer bpage to be allocated*/
 int (*writefcn)();
 /****************************************************************************
@@ -265,7 +263,7 @@ int error;		/* error value returned*/
 
 /************************* Interface to the Outside World ****************/
 
-PFbufGet(fd,pagenum,fpage,readfcn,writefcn)
+int PFbufGet(fd,pagenum,fpage,readfcn,writefcn)
 int fd;	/* file descriptor */
 int pagenum;	/* page number */
 PFfpage **fpage;	/* pointer to pointer to file page */
@@ -352,7 +350,7 @@ g_logical_reads++; /* STATS: Increment logical read */
 	return(PFE_OK);
 }
 
-PFbufUnfix(fd,pagenum,dirty)
+int PFbufUnfix(fd,pagenum,dirty)
 int fd;		/* file descriptor */
 int pagenum;	/* page number */
 int dirty;	/* TRUE if page is dirty */
@@ -400,7 +398,7 @@ PFbpage *bpage;
 	return(PFE_OK);
 }
 
-PFbufAlloc(fd,pagenum,fpage,writefcn)
+int PFbufAlloc(fd,pagenum,fpage,writefcn)
 int fd;		/* file descriptor */
 int pagenum;	/* page number */
 PFfpage **fpage;	/* pointer to file page */
@@ -455,7 +453,7 @@ int error;
 }
 
 
-PFbufReleaseFile(fd,writefcn)
+int PFbufReleaseFile(fd,writefcn)
 int fd;		/* file descriptor */
 int (*writefcn)();	/* function to write a page of file */
 /****************************************************************************
@@ -516,7 +514,7 @@ int error;		/* error code */
 }
 
 
-PFbufUsed(fd,pagenum)
+int PFbufUsed(fd,pagenum)
 int fd;		/* file descriptor */
 int pagenum;	/* page number */
 /****************************************************************************

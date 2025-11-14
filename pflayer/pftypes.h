@@ -67,14 +67,23 @@ typedef struct PFhash_entry {
 #define PFhash(fd,page) (((fd)+(page)) % PF_HASH_TBL_SIZE)
 
 /******************* Interface functions from Hash Table ****************/
-extern void PFhashInit();
-extern PFbpage *PFhashFind();
-extern PFhashInsert();
-extern PFhashDelete();
-extern PFhashPrint();
+/* --- MODIFIED --- */
+extern void PFhashInit(void);
+extern PFbpage *PFhashFind(int fd, int page);
+extern int PFhashInsert(int fd, int page, PFbpage *bpage);
+extern int PFhashDelete(int fd, int page);
+extern void PFhashPrint(void);
 
 /****************** Interface functions from Buffer Manager *************/
-extern PFbufGet();
-extern PFbufUnfix();
-extern PFbufalloc();
-extern PFbufReleaseFile();
+/* --- MODIFIED --- */
+extern void PFbufInit(void);
+extern int PFbufGet(int fd, int pagenum, PFfpage **fpage, int (*readfcn)(), int (*writefcn)());
+extern int PFbufUnfix(int fd, int pagenum, int dirty);
+extern int PFbufAlloc(int fd, int pagenum, PFfpage **fpage, int (*writefcn)());
+extern int PFbufReleaseFile(int fd, int (*writefcn)());
+extern int PFbufUsed(int fd, int pagenum);
+extern void PFbufPrint(void);
+
+/* --- NEW --- */
+extern void PFbufResetStats(void);
+extern int PFbufGetStats(long *logical_reads, long *physical_reads, long *physical_writes);

@@ -14,14 +14,24 @@ testpf: testpf.o pflayer.o
 testhash: testhash.o pflayer.o
 	cc -o testhash testhash.o pflayer.o
 
+# NEW: Rule for building testpf_stats
+testpf_stats: testpf_stats.o pflayer.o
+	cc -o testpf_stats testpf_stats.o pflayer.o
+
 $(OBJ): $(HDR)
 
 testhash.o: $(HDR)
 
 testpf.o: $(HDR)
 
+# NEW: Rule for testpf_stats.o
+testpf_stats.o: $(HDR)
+
 lint: 
 	lint $(SRC)
 
 install: pflayer.o 
+
+clean:
+	del /f *.o testpf.exe testhash.exe testpf_stats.exe
 
