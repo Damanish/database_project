@@ -24,12 +24,38 @@ extern char *malloc();
 
 /* --- NEW Public Configuration Functions --- */
 
-void PF_SetBufferSize(int size) {
-    /* Only allow setting if buffer is not yet allocated */
-    if (PFnumbpage == 0) {
-        g_pf_max_bufs = size;
-    }
-    /* Could set PFerrno to an error otherwise */
+/**
+ * @brief Initializes all buffer manager static globals.
+ * Called by PF_Init().
+ */
+void PFbufInit()
+{
+	PFnumbpage = 0;
+	PFfirstbpage = NULL;
+	PFlastbpage = NULL;
+	PFfreebpage = NULL;
+	
+	/* Set defaults, in case user doesn't call setters */
+	g_pf_max_bufs = PF_MAX_BUFS; 
+	g_pf_strategy = PF_STRAT_LRU;
+	
+	/* Reset stats */
+	g_logical_reads = 0;
+	g_physical_reads = 0;
+	g_physical_writes = 0;
+}
+
+void PF_SetBufferSize(int size)
+{
+	if (PFnumbpage == 0 && size > 0)
+	{
+		g_pf_max_bufs = size;
+	}
+	else if (PFnumbpage > 0)
+	{
+		/* Cannot change buffer size after it's allocated */
+		PFerrno = PFE_FILEOPEN; /* Re-using error code */
+	}
 }
 
 void PF_SetStrategy(int strategy) {

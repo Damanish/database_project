@@ -26,6 +26,14 @@ sense that it's <0 or >= # of pages in the file */
 
 extern char *malloc();
 
+
+/* --- NEW: Prototypes for functions in buf.c --- */
+extern void PFbufInit();
+extern void PFbufResetStats(void);
+extern int PFbufGetStats(long *logical_reads, 
+                         long *physical_reads, 
+                         long *physical_writes);
+
 /****************** Internal Support Functions *****************************/
 static char *savestr(str)
 char *str;		/* string to be saved */
@@ -185,6 +193,9 @@ GLOBAL VARIABLES MODIFIED:
 int i;
 	/* init the hash table */
 	PFhashInit();
+
+	/* === NEW: init the buffer manager === */
+	PFbufInit();
 
 	/* init the file table to be not used*/
 	for (i=0; i < PF_FTAB_SIZE; i++){
@@ -700,6 +711,51 @@ RETURN VALUE:
 	return(PFbufUnfix(fd,pagenum,dirty));
 }
 
+/* * === NEW PUBLIC FUNCTIONS ===
+ */
+
+int PF_MarkDirty(int fd, int pagenum)
+/****************************************************************************
+SPECIFICATIONS:
+	Explicitly mark a page as dirty, and make it MRU.
+	This is just a wrapper for PFbufUsed().
+*****************************************************************************/
+{
+	if (PFinvalidFd(fd)){
+		PFerrno = PFE_FD;
+		return(PFerrno);
+	}
+
+	if (PFinvalidPagenum(fd,pagenum)){
+		PFerrno = PFE_INVALIDPAGE;
+		return(PFerrno);
+	}
+
+	/* PFbufUsed finds the page, checks if fixed, 
+	   marks dirty, and moves to head of list */
+	return(PFbufUsed(fd, pagenum));
+}
+
+
+void PF_ResetStats(void)
+/****************************************************************************
+SPECIFICATIONS:
+	Wrapper for PFbufResetStats()
+*****************************************************************************/
+{
+	PFbufResetStats();
+}
+
+
+int PF_GetStats(long *logical_reads, long *physical_reads, long *physical_writes)
+/****************************************************************************
+SPECIFICATIONS:
+	Wrapper for PFbufGetStats()
+*****************************************************************************/
+{
+	return PFbufGetStats(logical_reads, physical_reads, physical_writes);
+}
+
 /* error messages */
 static char *PFerrormsg[]={
 "No error",
@@ -745,48 +801,4 @@ RETURN VALUE: none
 		perror(" ");
 	else	fprintf(stderr,"\n");
 
-}
-
-/* --- NEWLY IMPLEMENTED FUNCTIONS --- */
-
-/**
- * @brief (Wrapper for PFbufUsed)
- * Explicitly marks a fixed page as dirty and makes it MRU.
- */
-int PF_MarkDirty(int fd, int pagenum) {
-    int error;
-
-    if (PFinvalidFd(fd)) {
-        PFerrno = PFE_FD;
-        return(PFerrno);
-    }
-
-    if (PFinvalidPagenum(fd, pagenum)) {
-        PFerrno = PFE_INVALIDPAGE;
-        return(PFerrno);
-    }
-
-    /* * PFbufUsed (from buf.c) finds the page, checks if fixed,
-     * sets dirty = TRUE, and moves it to the head of the list.
-     * This is exactly what we need.
-     */
-    if ((error = PFbufUsed(fd, pagenum)) != PFE_OK) {
-        return(error);
-    }
-
-    return PFE_OK;
-}
-
-/**
- * @brief Wrapper for PFbufResetStats
- */
-void PF_ResetStats(void) {
-    PFbufResetStats();
-}
-
-/**
- * @brief Wrapper for PFbufGetStats
- */
-int PF_GetStats(long *logical_reads, long *physical_reads, long *physical_writes) {
-    return PFbufGetStats(logical_reads, physical_reads, physical_writes);
 }
