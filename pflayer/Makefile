@@ -6,7 +6,7 @@ HDR = pftypes.h pf.h
 pflayer.o: $(OBJ)
 	ld -r -o pflayer.o $(OBJ)
 
-tests: testhash testpf
+tests: testhash testpf testpf_stats testpf_workload
 
 testpf: testpf.o pflayer.o
 	cc -o testpf testpf.o pflayer.o
@@ -18,6 +18,9 @@ testhash: testhash.o pflayer.o
 testpf_stats: testpf_stats.o pflayer.o
 	cc -o testpf_stats testpf_stats.o pflayer.o
 
+testpf_workload: testpf_workload.o pflayer.o
+	cc -o testpf_workload testpf_workload.o pflayer.o
+
 $(OBJ): $(HDR)
 
 testhash.o: $(HDR)
@@ -26,6 +29,8 @@ testpf.o: $(HDR)
 
 # NEW: Rule for testpf_stats.o
 testpf_stats.o: $(HDR)
+
+testpf_workload.o: $(HDR)
 
 lint: 
 	lint $(SRC)
